@@ -158,33 +158,69 @@ print(p1.es_mayor_de_edad())
 #negativa, no se hará nada.
 # retirar(cantidad): se retira una cantidad a la cuenta. La cuenta puede estar en números
 #rojos.
+import re
+
 class Cuenta:
-    
-    def __init__(self, titular, cantidad=0):
-        self.__titular = titular
-        self.__cantidad = cantidad
-        
-    def set_titular(self, titular):
-        self.__titular = titular
-        
-    def get_titular(self):
-        return self.__titular
-    
-    def set_cantidad(self, cantidad):
-        self.__cantidad = cantidad
-        
-    def get_cantidad(self):
-        return self.__cantidad
-    
+    def __init__(self, titular=None, cantidad=0):
+        self._titular = titular
+        self._cantidad = cantidad
+
+    @property
+    def titular(self):
+        return self._titular
+
+    @titular.setter
+    def titular(self, valor):
+        if not valor:
+            print("El titular no puede estar vacío.")
+        else:
+            self._titular = valor
+
+    @property
+    def cantidad(self):
+        return self._cantidad
+
+    @cantidad.setter
+    def cantidad(self, valor):
+        if valor < 0:
+            print("La cantidad no puede ser negativa.")
+        else:
+            self._cantidad = valor
+
     def mostrar(self):
-        print(f"Titular: {self.__titular}, Cantidad: {self.__cantidad}")
-        
+        print(f"Titular: {self.titular}\nCantidad: {self.cantidad}")
+
     def ingresar(self, cantidad):
-        if cantidad > 0:
-            self.__cantidad += cantidad
-            
+        if cantidad < 0:
+            print("No se puede ingresar una cantidad negativa.")
+        else:
+            self.cantidad += cantidad
+
     def retirar(self, cantidad):
-        self.__cantidad -= cantidad
+        if cantidad < 0:
+            print("No se puede retirar una cantidad negativa.")
+        elif self.cantidad < cantidad:
+            print("No hay suficiente saldo en la cuenta.")
+        else:
+            self.cantidad -= cantidad
+            print("Retiro realizado correctamente.")
+
+
+# Ejemplo de uso
+cuenta1 = Cuenta()
+cuenta1.titular = "Juan Pérez"
+cuenta1.cantidad = 1000.0
+cuenta1.mostrar()
+
+cuenta1.ingresar(500.0)
+cuenta1.mostrar()
+
+cuenta1.retirar(2000.0)
+cuenta1.mostrar()
+
+cuenta1.retirar(500.0)
+cuenta
+
 
 #8. Vamos a definir ahora una “Cuenta Joven”, para ello vamos a crear una nueva clase
 #CuantaJoven que deriva de la clase creada en el punto 7. Cuando se crea esta nueva clase,
@@ -199,30 +235,74 @@ class Cuenta:
 # El método mostrar() debe devolver el mensaje de “Cuenta Joven” y la bonificación de la
 #cuenta.
 
-class CuentaJoven(Cuenta):
+import re
+
+class CuentaJoven(CuentaBancaria):
     
-    def __init__(self, titular, cantidad=0, bonificacion=0):
+    def __init__(self, titular, cantidad, bonificacion):
         super().__init__(titular, cantidad)
-        self.__bonificacion = bonificacion
-        
-    def set_bonificacion(self, bonificacion):
-        self.__bonificacion = bonificacion
-        
-    def get_bonificacion(self):
-        return self.__bonificacion
+        self.bonificacion = bonificacion
+    
+    @property
+    def bonificacion(self):
+        return self._bonificacion
+    
+    @bonificacion.setter
+    def bonificacion(self, value):
+        if not re.match(r'^\d+(\.\d+)?$', str(value)):
+            raise ValueError("La bonificación debe ser un número.")
+        value = float(value)
+        if value < 0 or value > 100:
+            raise ValueError("La bonificación debe ser un número entre 0 y 100.")
+        self._bonificacion = value    
     
     def es_titular_valido(self):
-        # asumiendo que la fecha de nacimiento del titular se encuentra en la variable fecha_nacimiento
-        edad = calcular_edad(fecha_nacimiento)
-        if edad >= 18 and edad < 25:
-            return True
-        else:
-            return False
-        
-    def retirar(self, cantidad):
-        if self.es_titular_valido():
-            super().retirar(cantidad)
-            
+        return self.titular.es_mayor_de_edad() and self.titular.edad < 25
+    
+   def retirar(self, cantidad):
+    if not self.es_titular_valido():
+        raise ValueError("No se puede retirar dinero de una cuenta joven con un titular no válido.")
+    if not re.match(r'^\d+(\.\d+)?$', str(cantidad)):
+        raise ValueError("La cantidad a retirar debe ser un número.")
+    cantidad = float(cantidad)
+    if cantidad <= 0:
+        raise ValueError("La cantidad a retirar debe ser mayor que cero.")
+    if cantidad > self.cantidad:
+        raise ValueError("La cantidad a retirar excede el saldo de la cuenta.")
+    self.cantidad -= cantidad * (1 - self.bonificacion / 100)
+
+    
     def mostrar(self):
-        print(f"Cuenta Joven, Bonificación: {self.__bonificacion}%")
+        return f"Cuenta Joven: {super().mostrar()} Bonificación: {self.bonificacion}%"
+
+    cuenta_joven = CuentaJoven(Persona("Juan", 18), 1000, 10)
+
+# Comprobamos que la bonificación ha sido correctamente validada
+try:
+    cuenta_joven.bonificacion = "20%"
+except ValueError as e:
+    print(f"Error: {e}")  # Debe imprimir "La bonificación debe ser un número."
+
+try:
+    cuenta_joven.bonificacion = 150
+except ValueError as e:
+    print(f"Error: {e}")  # Debe imprimir "La bonificación debe ser un número entre 0 y 100."
+
+# Comprobamos que el método "es_titular_valido" funciona correctamente
+print(cuenta_joven.es_titular_valido())  # Debe imprimir False
+
+cuenta_joven.titular.edad = 20
+print(cuenta_joven.es_titular_valido())  # Debe imprimir True
+
+# Comprobamos que el método "retirar" funciona correctamente
+cuenta_joven.retirar(500)  # Debe imprimir "No se puede retirar dinero de una cuenta joven con un titular no válido."
+
+cuenta_joven.titular.edad = 26
+cuenta_joven.retirar(500)  # Debe retirar 500 sin problemas
+
+# Comprobamos que el método "mostrar" funciona correctamente
+print(cuenta_joven.mostrar())  # Debe imprimir "Cuenta Joven: Titular: Juan, Edad: 26, Cantidad: 500.0 Bonificación: 10%"
+
+
+
 
