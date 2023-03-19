@@ -78,47 +78,72 @@ def get_int():
 # mostrar(): Muestra los datos de la persona.
 # Es_mayor_de_edad(): Devuelve un valor lógico indicando si es mayor de edad.
 
+import re
+
 class Persona:
     def __init__(self, nombre="", edad=0, dni=""):
-        self.__nombre = nombre
-        self.__edad = edad
-        self.__dni = dni
-
-    def set_nombre(self, nombre):
-        if isinstance(nombre, str):
-            self.__nombre = nombre
-        else:
-            print("Error: el nombre debe ser una cadena de caracteres")
-
-    def set_edad(self, edad):
-        if isinstance(edad, int) and edad >= 0:
-            self.__edad = edad
-        else:
-            print("Error: la edad debe ser un número entero positivo")
-
-    def set_dni(self, dni):
-        if isinstance(dni, str):
-            self.__dni = dni
-        else:
-            print("Error: el DNI debe ser una cadena de caracteres")
-
-    def get_nombre(self):
-        return self.__nombre
-
-    def get_edad(self):
-        return self.__edad
-
-    def get_dni(self):
-        return self.__dni
-
+        self._nombre = nombre
+        self._edad = edad
+        self._dni = dni
+    
+    # Getter y setter para el atributo nombre
+    @property
+    def nombre(self):
+        return self._nombre
+    
+    @nombre.setter
+    def nombre(self, nombre):
+        exp_regular_nombre = r'^[A-Za-zÁ-Úá-ú\s]+$'
+        if not re.match(exp_regular_nombre, nombre):
+            raise ValueError("El nombre debe contener solo letras y espacios en blanco")
+        self._nombre = nombre
+    
+    # Getter y setter para el atributo edad
+    @property
+    def edad(self):
+        return self._edad
+    
+    @edad.setter
+    def edad(self, edad):
+        exp_regular_edad = r'^\d{1,3}$'
+        if not re.match(exp_regular_edad, str(edad)):
+            raise ValueError("La edad debe ser un número entero de 1 a 3 dígitos")
+        self._edad = edad
+    
+    # Getter y setter para el atributo dni
+    @property
+    def dni(self):
+        return self._dni
+    
+    @dni.setter
+    def dni(self, dni):
+        exp_regular_dni = r'^\d{8}[A-HJ-NP-TV-Z]$'
+        if not re.match(exp_regular_dni, dni):
+            raise ValueError("El DNI debe ser un número de 8 dígitos seguido de una letra")
+        self._dni = dni
+    
     def mostrar(self):
-        print("Nombre:", self.__nombre)
-        print("Edad:", self.__edad)
-        print("DNI:", self.__dni)
-
+        print(f"Nombre: {self.nombre}")
+        print(f"Edad: {self.edad}")
+        print(f"DNI: {self.dni}")
+    
     def es_mayor_de_edad(self):
-        return self.__edad >= 18
+        return self.edad >= 18
 
+
+# Crear una persona con datos vacíos
+p1 = Persona()
+
+# Establecer los datos mediante los setters
+p1.set_nombre("Juan Pérez")
+p1.set_edad(25)
+p1.set_dni("12345678Z")
+
+# Mostrar los datos de la persona
+p1.mostrar()
+
+# Comprobar si es mayor de edad
+print(p1.es_mayor_de_edad())
 
 
 
